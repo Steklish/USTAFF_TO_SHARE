@@ -1,0 +1,290 @@
+/* main.css - Journal App with Mobile Responsiveness */
+:root {
+    --paper: #1a1a1a;
+    --ink: #e0e0e0;
+    --accent-1: #7c4cc9;
+    --accent-2: #5f8b6d;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --message-bg: #e2c6952d;
+}
+
+body {
+    margin: 0;
+    color: var(--ink);
+    min-height: 100vh;
+    background: #121212;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.paper-container {
+    padding: 2rem;
+    background: var(--paper);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px var(--shadow);
+    width: 800px;
+    max-width: 90%;
+    margin: 2rem;
+    border: 1px solid #333;
+}
+
+.journal {
+    position: relative;
+    min-height: 60vh;
+}
+
+.messages {
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+.note-block {
+    margin: 1.5rem 0;
+    padding: 1.2rem;
+    position: relative;
+    animation: fadeIn 0.4s ease-out;
+    background: var(--message-bg);
+    border-radius: 8px;
+    max-width: 80%;
+}
+
+.user-note {
+    border-right: 4px solid var(--accent-1);
+    text-align: right;
+    margin-left: auto;
+    margin-right: 1rem;
+    background: linear-gradient(to left, rgba(196, 170, 230, 0.166) 0%, transparent 100%);
+}
+
+.bot-note {
+    border-left: 4px solid var(--accent-2);
+    margin-right: auto;
+    margin-left: 1rem;
+    background: linear-gradient(to right, rgba(95, 139, 109, 0.1) 0%, transparent 100%);
+}
+
+.collapsible {
+    margin: 1rem 0;
+    border: 1px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 80%;
+}
+
+.collapsible-header {
+    padding: 0.8rem 1rem;
+    background: #333;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.9em;
+    color: var(--ink);
+    letter-spacing: 0.5px;
+}
+
+.collapsible-header::after {
+    content: '▼';
+    font-size: 0.8em;
+    transition: transform 0.3s;
+    color: var(--accent-2);
+}
+
+.collapsible-header.collapsed::after {
+    transform: rotate(-90deg);
+}
+
+.markdown-content {
+    padding: 1rem;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    line-height: 1.6;
+    font-size: 0.95em;
+    /* background: #252525; */
+}
+
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3 {
+    font-family: 'Roboto Mono', monospace;
+    color: var(--accent-2);
+    margin: 1rem 0;
+    font-weight: 500;
+}
+
+.markdown-content code {
+    font-family: 'Roboto Mono', monospace;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    color: var(--accent-1);
+}
+
+.markdown-content pre {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    border-left: 3px solid var(--accent-1);
+    margin: 1rem 0;
+}
+
+.input-area {
+    display: flex;
+    gap: 0.8rem;
+    padding: 1rem;
+    border-top: 1px solid #333;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--paper)
+    /* z-index: 100;     Optional: make sure it's above other content */
+}
+
+
+input {
+    flex: 1;
+    padding: 0.8rem;
+    border: none;
+    border-bottom: 2px solid var(--accent-1);
+    background: #252525;
+    font-family: 'Inter', sans-serif;
+    font-size: 1em;
+    color: var(--ink);
+    border-radius: 4px;
+    max-width: 80%;
+    margin: 0 auto;
+}
+
+input:focus {
+    outline: none;
+    border-bottom-color: var(--accent-2);
+    box-shadow: 0 2px 0 0 var(--accent-2);
+}
+
+button {
+    padding: 0.8rem 1.5rem;
+    background: var(--accent-1);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background: #6b3fb3;
+    transform: translateY(-1px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Link styles */
+a:link {
+    color: rgba(219, 237, 125, 0.521);
+}
+a:visited {
+    color: rgb(153, 90, 195);
+}
+a:hover {
+    color: rgb(121, 244, 150);
+}
+a:active {
+    color: orange;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .paper-container {
+        padding: 1rem;
+        margin: 1rem;
+        width: 95%;
+    }
+
+    .journal {
+        min-height: 70vh;
+    }
+
+    .note-block {
+        max-width: 90%;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+
+    .user-note, .bot-note {
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+    }
+
+    .collapsible {
+        max-width: 95%;
+    }
+
+    .input-area {
+        flex-direction:row;
+        padding: 0.8rem;
+    }
+
+    input {
+        max-width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    button {
+        width: 10%;
+        align-self: center;
+        padding: 0.8rem;
+    }
+
+    .markdown-content {
+        padding: 0.8rem;
+        font-size: 0.9em;
+    }
+
+    .markdown-content pre {
+        padding: 0.8rem;
+        font-size: 0.85em;
+    }
+
+    .collapsible-header {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85em;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        font-size: 14px;
+    }
+
+    .paper-container {
+        padding: 0.8rem;
+        margin: 0.5rem;
+        border-radius: 8px;
+    }
+
+    .note-block {
+        padding: 0.8rem;
+        max-width: 95%;
+    }
+
+    .messages {
+        padding: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .markdown-content h1, 
+    .markdown-content h2, 
+    .markdown-content h3 {
+        margin: 0.8rem 0;
+    }
+}
