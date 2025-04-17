@@ -2,6 +2,16 @@ from flask import Flask, render_template, request, jsonify
 import os
 import src.ustaff as ustaff_src
 import src.env as env
+
+def print_current_dir():
+    """Prints the current working directory's name (basename)."""
+    current_dir = os.path.basename(os.getcwd())
+    print(f"Current directory name: {current_dir}")
+
+# Usage
+print_current_dir()
+
+
 def print_directory(path):
     for root, dirs, files in os.walk(path):
         print(f"Directory: {root}")
