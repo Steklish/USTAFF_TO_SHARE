@@ -5,15 +5,15 @@ from .embedding import EmbeddingClient
 import uuid
 from .colors import *
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from .env import *
 
-persist_directory = "./database"
 
-client = chromadb.PersistentClient(persist_directory)
+client = chromadb.PersistentClient(DATABASE_PATH)
 
 collection = client.get_or_create_collection("ustaff-collection")
 
 class ChromaDB:
-    def __init__(self, persist_directory="./database"):
+    def __init__(self, persist_directory=DATABASE_PATH):
         self.persist_directory = persist_directory
         self.client = chromadb.PersistentClient(persist_directory)
         self.collection = self.client.get_or_create_collection("ustaff-collection")

@@ -1,6 +1,4 @@
-# Use the latest Python base image
-FROM python:3.11-slim-buster
-
+FROM python:alpine
 # Set the working directory inside the container
 WORKDIR /app
 
