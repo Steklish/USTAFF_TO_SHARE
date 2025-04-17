@@ -1,6 +1,6 @@
 # USTAFF THE AI
 
-### `Dockerfile ( ˇ෴ˇ )`
+### `Dockerfile (if needed) ( ˇ෴ˇ )`
 ```
 FROM python:3.12
 WORKDIR /app
@@ -61,8 +61,10 @@ CMD ["python", "main.py"]
     - оценки **намерения** пользователя из второго шага
     - Изначального запроса пользовалеля 
 - Предоставления вывода пользователю с возможностью просмотреть даныне, полученные из БД в процессе обработки
+[`Ссылочка на Юстафа (старый)`](https://ustaff-img-production.up.railway.app/)
 
-# [`Ссылочка на Юстафа`](https://ustaff-img-production.up.railway.app/)
+# [`Ссылочка на Юстафа (preview)`](https://ustafftoshare-production.up.railway.app)
+# [`FileDrowser link`](https://filebrowser-production-a05d.up.railway.app)
 
 ### Инструкция для Деда
 - `docker build -t ustaff-img .` -> _[Successfully tagged ustaff-img:latest]_

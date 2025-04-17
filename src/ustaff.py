@@ -150,9 +150,10 @@ class ustaff:
         response = self.client.chat.completions.create(
             model=GEMINI_MODEL,
             messages=[
-                {"role": "system", "content": "Ты должен удалить из текста все части, которые не относятся к запросу пользователя. Оставляй названия файлов и показатель расстояния и улучши форматирование. Если встречается pdf форматирование преобразуй в markdown"},
+                {"role": "system", "content": "Ты должен удалить из текста все части, которые не относятся к запросу пользователя и не имеют смысла. Если удаляешь документ, оставь зпись о том, какой документ был удален (включи документ и distance). Оставляй названия файлов и показатель расстояния. Преобразуй в markdown форматирование"},
                 {"role": "user", "content": f"""[user's intent]{intent} [recieved data]{data}"""}     
             ]
         )
+        print(data)
         print(f"{RED}Cut off unrelated: \n{GREEN}{response.choices[0].message.content}{RESET}")
         return response.choices[0].message.content

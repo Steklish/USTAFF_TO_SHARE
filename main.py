@@ -1,8 +1,19 @@
 from flask import Flask, render_template, request, jsonify
+import os
 import src.ustaff as ustaff_src
+import src.env as env
+def print_directory(path):
+    for root, dirs, files in os.walk(path):
+        print(f"Directory: {root}")
+        for dir in dirs:
+            print(f"  Subdirectory: {dir}")
+        for file in files:
+            print(f"  File: {file}")
 
 app = Flask(__name__)
+print_directory(env.DATABASE_PATH)
 ustaff = ustaff_src.ustaff()
+
 @app.route("/")
 def home():
     return render_template("index.html")
