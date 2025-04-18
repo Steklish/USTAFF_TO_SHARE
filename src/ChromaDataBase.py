@@ -8,14 +8,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from .env import *
 
 
-client = chromadb.PersistentClient(DATABASE_PATH)
-
-collection = client.get_or_create_collection("ustaff-collection")
 
 class ChromaDB:
-    def __init__(self, persist_directory=DATABASE_PATH):
-        self.persist_directory = persist_directory
-        self.client = chromadb.PersistentClient(persist_directory)
+    def __init__(self):
+        self.client = chromadb.PersistentClient(DATABASE_PATH)
         self.collection = self.client.get_or_create_collection("ustaff-collection")
         self.embedding = EmbeddingClient()
 

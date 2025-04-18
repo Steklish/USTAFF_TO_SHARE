@@ -8,7 +8,7 @@ GEMINI_API_KEY_ARRAY = [
     "AIzaSyApGxasp5P1SWfNmTkOIYSLN-nlUmSNn8w"
 ]
 GEMINI_API_KEY = GEMINI_API_KEY_ARRAY[0]
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-2.5-flash-preview-04-17"
 EMBEDDING_MODEL = "text-multilingual-embedding-002"
 
 LOCATION = "us-central1"

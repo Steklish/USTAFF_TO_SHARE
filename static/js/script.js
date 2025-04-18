@@ -20,74 +20,190 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function sendMessage() {
-    const input = document.getElementById('userInput');
-    const message = input.value.trim();
-    
-    if (message) {
-        // Disable input and button while processing
-        const input = document.getElementById('userInput');
-        input.disabled = true;
-        
-        addMessage(message, 'user');
-        input.value = '';
-        
-        // Add loading placeholder
-        addMessage('Loading...', 'bot');
-        
-        // Send request to backend and wait for response
-        setTimeout(async () => {
-            try {
-                const res = await fetch('/api/get-recipe', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ message: message })
-                });
-                
-                // Remove loading placeholder
-                const container = document.getElementById('messages');
-                container.removeChild(container.lastChild);
-                
-                const data = await res.json();
-                addMessage(data.data, 'bot', true);
-                
-                // Add collapsible info block with metadata
-                setTimeout(() => {
-                    addCollapsibleBlock('Sources', data.metadata);
-                }, 300);
-            } catch (err) {
-                // Remove loading placeholder
-                const container = document.getElementById('messages');
-                container.removeChild(container.lastChild);
-                addMessage('Sorry, there was an error processing your request.', 'bot');
-            } finally {
-                // Re-enable input
-                input.disabled = false;
-            }
-        }, 800);
+
+let autoScrollEnabled = true;
+let lastScrollTop = window.pageYOffset;
+// Listen for user scrolls
+document.addEventListener('scroll', () => {
+    // console.info("---")
+    let scrollTop = window.pageYOffset;
+    if (scrollTop < lastScrollTop) {
+        // User is scrolling UP
+        console.info('Scrolling up');
+        autoScrollEnabled = false;
+        // Place your upward-scroll logic here
     }
-}
+    lastScrollTop = scrollTop;
+
+    // Calculate if user is NOT at the bottom (allow a threshold for precision)
+});
 
 function addMessage(content, type, isMarkdown = false) {
+    autoScrollEnabled = true;
     const container = document.getElementById('messages');
     const message = document.createElement('div');
-    message.className = `note-block ${type}-note`;
+    message.className = `note-block ${type}-note updating`;  // Add 'updating' here to trigger transition
     
     if (isMarkdown) {
-        message.innerHTML = `<div class="markdown-content">${marked.parse(content)}</div>`;
+        message.innerHTML = `<div class="markdown-content updating">${marked.parse(content)}</div>`; 
+        // Add 'updating' class to markdown-content as well
     } else {
         message.textContent = content;
     }
     
     container.appendChild(message);
     
-    // Scroll both the container and window to bottom
-    container.scrollTop = container.scrollHeight;
-    window.scrollTo(0, document.body.scrollHeight);
+    // Trigger reflow to ensure the browser registers the initial state
+    void message.offsetWidth; 
+    
+    // Remove the 'updating' class after the transition duration (300ms)
+    setTimeout(() => {
+        message.classList.remove('updating');
+        if (isMarkdown) {
+            const markdownDiv = message.querySelector('.markdown-content');
+            if (markdownDiv) {
+                markdownDiv.classList.remove('updating');
+            }
+        }
+    }, 300); // Match your CSS transition duration
+    
+    return message;
 }
 
+
+
+async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+
+    // Disable input during processing
+    input.disabled = true;
+    
+    // Add user message
+    addMessage(message, 'user');
+    input.value = '';
+    
+    // Add loading indicator
+    const loadingMessage = addMessage('Loading...', 'bot');
+    
+    const container = document.getElementById('messages');
+    
+    if (autoScrollEnabled) {
+        console.info("scrolling")
+        container.scrollTop = container.scrollHeight;
+        
+        // Scroll container and window to bottom (optional)
+        // For the window (scrolling the whole page)
+        window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+        });
+        
+    }
+    try {
+        const response = await fetch('/api/get_response', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message })
+        });
+
+        // Remove loading indicator
+        loadingMessage.remove();
+        const container = document.getElementById('messages');
+        // How close to the bottom (in px) is considered "at the bottom"
+        const threshold = 50; 
+
+        // Create container for streaming response
+        botMessage = addMessage('', 'bot');
+        
+        // Process stream chunks
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let text = ''
+        let buffer = '';
+
+        let started_answering = false;
+        while (true) {
+            const { done, value } = await reader.read();
+            let chunk = decoder.decode(value, { stream: true });
+            if (chunk == "answering..."){
+                botMessage.remove()
+                botMessage = addMessage('', 'bot');
+                text = '';
+                started_answering = true;
+            }
+            if (started_answering){
+                text += chunk;
+            }
+            else{
+                botMessage.remove()
+                botMessage = addMessage('', 'bot');
+                text = chunk;
+            }
+            if (done) break;
+            
+            update_message(text, botMessage)
+        }
+        console.info("stream recieved")
+        addCollapsibleBlock('Sources', await getMeta());
+        if (autoScrollEnabled) {
+        console.info("scrolling")
+        container.scrollTop = container.scrollHeight;
+        
+        // Scroll container and window to bottom (optional)
+        // For the window (scrolling the whole page)
+        window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+        });
+        
+    }
+        // botMessage = addMessage('', 'bot');
+        
+    } catch (error) {
+        loadingMessage.remove();
+        addMessage(`Error: ${error.message}`, 'bot');
+    } finally {
+        input.disabled = false;
+        input.focus();
+    }
+}
+
+async function getMeta() {
+    console.info("requesting meta");
+    try {
+        const metaResponse = await fetch('/api/get_last_message_meta');
+        
+        if (!metaResponse.ok) {
+            throw new Error(`HTTP error! Status: ${metaResponse.status}`);
+        }
+
+        const responseData = await metaResponse.json();
+        console.info("meta response:", responseData);
+
+        // Extract the metadata string from either 'metadata' or 'data.metadata' field
+        const metadata = responseData.metadata || 
+                        (responseData.data && responseData.data.metadata) || 
+                        null;
+
+        if (!metadata) {
+            console.warn("No metadata field found in response");
+            return null;
+        }
+
+        console.info("Extracted metadata:", metadata);
+        return metadata;
+    } catch (error) {
+        console.error("Fetch failed:", error);
+        return null;
+    }
+}
+
+    
 function addCollapsibleBlock(title, content) {
     const container = document.getElementById('messages');
     
@@ -100,5 +216,54 @@ function addCollapsibleBlock(title, content) {
     
     container.appendChild(block);
     container.scrollTop = container.scrollHeight;
+    return block
+}
+
+function update_message(content, message) {
+    // Find or create the markdown-content div
+    let markdownDiv = message.querySelector('.markdown-content');
+    if (!markdownDiv) {
+        markdownDiv = document.createElement('div');
+        markdownDiv.className = 'markdown-content';
+        message.appendChild(markdownDiv);
+    }
+
+    // Add the 'updating' class to trigger the transition
+    markdownDiv.classList.add('updating');
+    // If you have a note-block, add the class there too
+    const noteBlock = message.querySelector('.note-block');
+    if (noteBlock) {
+        noteBlock.classList.add('updating');
+    }
+
+    const container = document.getElementById('messages');
+    
+    // Wait a short time for the transition to start (optional, for smoother effect)
+    setTimeout(() => {
+        
+        // Update the content
+        markdownDiv.innerHTML = marked.parse(content);
+
+        // Remove the 'updating' class to trigger the transition back
+        markdownDiv.classList.remove('updating');
+        if (noteBlock) {
+            noteBlock.classList.remove('updating');
+        }
+    }, 100); // 100ms is usually enough for the transition to be noticed
+    if (autoScrollEnabled) {
+        console.info("scrolling")
+        container.scrollTop = container.scrollHeight;
+        
+        // Scroll container and window to bottom (optional)
+        // For the window (scrolling the whole page)
+        window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+        });
+        
+    }
+    else {
+        console.info("not scrolling")
+    }
 }
 

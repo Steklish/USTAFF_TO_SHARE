@@ -25,7 +25,7 @@ class ustaff:
         """
         Get a contextual response from the assistant.
         """
-        
+        print("started non-stream processing")
         response = ""
         intent, additional_data = self.get_users_intent(query)
         RAG_processed = self.cut_off_unrelated(intent, additional_data)
@@ -63,6 +63,59 @@ class ustaff:
         self.prev_sources = RAG_processed
         return response
     
+    
+    def get_contextual_response_stream(self, query: str):
+        """
+        Get a contextual response from the assistant.
+        """
+        
+        yield "Started *user's intent* processing..."
+        print("started stream processing")
+        intent, additional_data = self.get_users_intent(query)
+        yield "Started *data* processing..."
+        RAG_processed = self.cut_off_unrelated(intent, additional_data)
+        contents = self.conversation
+        combined_prompt = f"[approximated user's query] {intent} [data you may need for answer] {RAG_processed} [original users query] {query}"
+        # combined_prompt = query
+        new_request = {
+            "role": "user",
+            "content": combined_prompt
+        }
+        print(GREEN, combined_prompt, RESET)
+        contents.append(new_request)
+        yield "summing up..."
+        stream = self.client.chat.completions.create(
+            model=GEMINI_MODEL,  # Verify if your model supports streaming
+            messages=[
+                {"role": "system", "content": SYSTEM_INSTRUCTION},
+                *contents
+            ],
+            stream=True  # Enable streaming
+        )
+        
+        full_response = []
+        yield "answering..."
+        for chunk in stream:
+            content = chunk.choices[0].delta.content
+            print(content)
+            if content is not None:
+                print(f"Yielding chunk: {repr(content)}")  # Debug output
+                yield content  # Yield each chunk as it arrives
+                full_response.append(content)
+        
+        # Store complete response in conversation history
+        new_response = {
+            "role": "assistant",
+            "content": "".join(full_response)
+        }
+        self.conversation.append(new_response)
+        
+        if len(self.conversation) > MAX_MESSAGE_COUNT:
+            self.conversation = self.conversation[-MAX_MESSAGE_COUNT:]
+        
+        self.prev_sources = RAG_processed
+        
+        
     def get_users_intent(self, query: str) -> str:        
         context = ""
         for turn in self.conversation:
@@ -97,7 +150,7 @@ class ustaff:
         response = self.client.chat.completions.create(
             model=GEMINI_MODEL,
             tools=TOOLS_DATA_RETRIEVAL,
-            tool_choice='required',
+            tool_choice='auto',
             messages=[
             {"role": "system", "content": "Тебе нужно использовать функции для получения информации, которая поможет ответить на запрос пользователя."},
             {"role": "user", "content": f"""Запрос пользователя {intent}"""}
