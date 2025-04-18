@@ -1,4 +1,5 @@
 import json
+import time
 from openai import OpenAI
 from .env import *
 from .colors import *
@@ -53,7 +54,9 @@ class ustaff:
         )
         
         full_response = []
+        time.sleep(0.1)
         yield "answering..."
+        time.sleep(0.1)
         for chunk in stream:
             content = chunk.choices[0].delta.content
             print(content)
