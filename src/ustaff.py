@@ -57,6 +57,8 @@ class ustaff:
         time.sleep(0.1)
         yield "answering..."
         time.sleep(0.1)
+        yield "answering..."
+        time.sleep(0.1)
         for chunk in stream:
             content = chunk.choices[0].delta.content
             print(content)

@@ -81,7 +81,6 @@ def get_response():
                     # Convert ALL chunks to bytes with explicit encoding
                     if isinstance(chunk, str):
                         yield chunk.encode('utf-8')
-                        time.sleep(0.08)
                     elif isinstance(chunk, bytes):
                         # Ensure bytes are UTF-8
                         try:
@@ -91,6 +90,7 @@ def get_response():
                             yield b'[BINARY DATA OMITTED]'
                     else:
                         yield str(chunk).encode('utf-8')
+                    time.sleep(0.14)
             except Exception as e:
                 # Handle streaming errors gracefully
                 yield f"\nSTREAM ERROR: {str(e)}".encode('utf-8')
