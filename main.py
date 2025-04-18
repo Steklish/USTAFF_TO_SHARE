@@ -81,6 +81,7 @@ def get_response():
                     # Convert ALL chunks to bytes with explicit encoding
                     if isinstance(chunk, str):
                         yield chunk.encode('utf-8')
+                        time.sleep(0.08)
                     elif isinstance(chunk, bytes):
                         # Ensure bytes are UTF-8
                         try:
