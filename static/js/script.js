@@ -177,8 +177,12 @@ async function sendMessage() {
 async function getMeta() {
     console.info("requesting meta");
     try {
-        const metaResponse = await fetch('/api/get_last_message_meta');
-        
+        const metaResponse = await fetch("http://127.0.0.1:5000/api/get_last_message_meta", {
+            method: "GET",  // Or PUT, etc.
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
         if (!metaResponse.ok) {
             throw new Error(`HTTP error! Status: ${metaResponse.status}`);
         }
