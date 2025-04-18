@@ -21,48 +21,7 @@ class ustaff:
         self.conversation = []
         self.db = ChromaDB()
         self.prev_sources = ""
-    def get_contextual_response(self, query: str) -> str:
-        """
-        Get a contextual response from the assistant.
-        """
-        print("started non-stream processing")
-        response = ""
-        intent, additional_data = self.get_users_intent(query)
-        RAG_processed = self.cut_off_unrelated(intent, additional_data)
-        contents = self.conversation
-        combined_prompt = f"[approximated user's query] {intent} [data you may need for answer] {RAG_processed} [original users query] {query}"
-        new_request = {
-            "role": "user",
-            "content": combined_prompt
-        }
-        print(GREEN, combined_prompt, RESET)
-        contents.append(new_request)
-        response = self.client.chat.completions.create(
-            model=GEMINI_MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": SYSTEM_INSTRUCTION
-                },
-                *contents
-            ],
-        ).choices[0].message.content
-        
-        new_response = {
-            "role": "assistant",
-            "content": response
-        }
-        new_response = {
-            "role": "assistant",
-            "content": response,
-        }
-        self.conversation = contents
-        self.conversation.append(new_response)
-        if len(self.conversation) > MAX_MESSAGE_COUNT:
-            self.conversation = self.conversation[-MAX_MESSAGE_COUNT:]
-        self.prev_sources = RAG_processed
-        return response
-    
+ 
     
     def get_contextual_response_stream(self, query: str):
         """
@@ -124,6 +83,7 @@ class ustaff:
         print(f"{YELLOW}starting intent processing{RESET}")
         response = self.client.chat.completions.create(
             model=GEMINI_MODEL,
+            max_completion_tokens=2100,
             # tools=TOOLS_DATA_RETRIEVAL,
             # tool_choice='required',
             messages=[

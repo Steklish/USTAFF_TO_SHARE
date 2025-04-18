@@ -135,6 +135,7 @@ async function sendMessage() {
                 botMessage = addMessage('', 'bot');
                 text = '';
                 started_answering = true;
+                continue;
             }
             if (started_answering){
                 text += chunk;
