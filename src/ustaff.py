@@ -6,6 +6,7 @@ from .colors import *
 from .ChromaDataBase import ChromaDB
 from .tools.web_search import web_search, web_search_tool
 from .tools.database_request import database_query_tool
+from .tools.claryfy import claryfy_tool
 
 MAX_MESSAGE_COUNT = 15
 
@@ -13,8 +14,13 @@ MAX_MESSAGE_COUNT = 15
 TOOLS_DATA_RETRIEVAL = [
     web_search_tool,
     database_query_tool
-    ]
+]
 
+TOOLS_DATA_RETRIEVAL_INTENT_CLARIFY = [
+    web_search_tool,
+    database_query_tool,
+    claryfy_tool
+    ]
 
 class ustaff:
     def __init__(self):
@@ -37,6 +43,24 @@ class ustaff:
         yield "Started *user's intent* processing..."
         print("started stream processing")
         intent, additional_data = self.get_users_intent(query)
+        if "requested additional information from user" in additional_data:
+            yield "answering..."
+            yield "answering..."
+            time.sleep(0.1)
+            yield additional_data
+            
+            self.conversation.extend(
+                [{
+                    "role": "user",
+                    "content": f"[approximated user's query] {intent} [original users query] {query}"
+                },
+                {
+                    "role": "assistant",
+                    "content": additional_data
+                }]
+            )
+            self.prev_sources = "Data requested from user..."
+            return
         yield "Started *data* processing..."
         RAG_processed = self.cut_off_unrelated(intent, additional_data)
         contents = self.conversation
@@ -94,7 +118,7 @@ class ustaff:
         response = self.client.chat.completions.create(
             model=FAST_AND_DUMB_ASS_MODEL,
             max_completion_tokens=500,
-            tools=TOOLS_DATA_RETRIEVAL,
+            tools=TOOLS_DATA_RETRIEVAL_INTENT_CLARIFY,
             tool_choice='auto',
             messages=[
             {"role": "system", "content": f"You need to determine the user's intent based on their query and chat history. Use the language the user is employing or the language most appropriate for the task. [current dat and time] {get_current_time()}"},
@@ -110,6 +134,11 @@ class ustaff:
 
             ],
         )
+        if not getattr(response, 'choices', None):
+            intent = query  # Fallback to original query
+        else:
+            message = response.choices[0].message if len(response.choices) > 0 else None
+            intent = message.content if message and hasattr(message, 'content') else query
         additional_info = ""
         if response.choices[0].message.tool_calls:
             # Handle each tool call
@@ -120,15 +149,12 @@ class ustaff:
                 print(MAGENTA, function_name, function_args, RESET )
                 if function_name == "get_local_data_from_database":
                     function_response = self.get_local_data_from_database(**function_args)
+                elif function_name == "clarylying_question":
+                    return [intent, f"requested additional information from user: {function_args["query"]}"]
                 else:
                     function_response = globals()[function_name](**function_args)
                 additional_info += function_response
                 # Handle potential missing data
-        if not getattr(response, 'choices', None):
-            intent = query  # Fallback to original query
-        else:
-            message = response.choices[0].message if len(response.choices) > 0 else None
-            intent = message.content if message and hasattr(message, 'content') else query
 
         # Check if function was called
         print(f"{GREEN}Intent: {intent}{RESET}")
@@ -144,8 +170,16 @@ class ustaff:
             tools=TOOLS_DATA_RETRIEVAL,
             tool_choice='auto',
             messages=[
-                {"role": "system", "content": f"Ты помощник для поиска ниформации. [current dat and time] {get_current_time()}"},
-                {"role": "user", "content": f"""Нужно найти информацию, которая поможет ответить на запрос пользователя. Запрос пользователя {intent}"""}
+                {"role": "system", "content": f"You are an advanced information retrieval assistant. Your task is to provide accurate, relevant, and concise answers to user queries by searching or recalling information. Always verify facts if possible.  [Current date and time: {get_current_time()}]  "},
+                {"role": "user", "content": f"""
+                 Find detailed information to answer the following user query:  
+                **User Intent:** "{intent}"  
+
+                Guidelines:  
+                1. Prioritize authoritative sources (e.g., academic, official websites).  
+                2. Summarize key points if the answer is complex.  
+                3. If unsure, ask clarifying questions.  
+                 """}
             ],
         )
         additional_info = ""
@@ -196,7 +230,33 @@ class ustaff:
             model=FAST_AND_DUMB_ASS_MODEL,
             messages=[
                 {"role": "system", "content": "Ты сортируешь информацию и выделяешь полезные части."},
-                {"role": "user", "content": f"""Ты должен удалить из текста все части, которые не относятся к запросу пользователя или не имеют смысла. ОСтальное тебе нудно подытожить и сдалать развернутые выводы исходя из запроса пользователя. Если удаляешь документ, оставь зпись о том, какой документ был удален (включи документ и distance). Оставляй названия файлов и показатель расстояния. Преобразуй в markdown форматирование. !не !отвечай на запрос [user's intent]{intent} [recieved data]{data}"""}     
+                {"role": "user", "content": f"""
+                 # Information Processing Instructions
+
+## Your Task:
+1. **Filter content**:
+   - Remove all parts that don't relate to the user's request or are meaningless
+   - Keep file names and distance metrics for any removed documents
+   - Note which documents were removed (include document name and distance)
+
+2. **Summarize**:
+   - Create a detailed summary of the remaining relevant information
+   - Make expanded conclusions based on the user's request
+   - Leave original info in place if is related to users prompt
+   
+## Output Requirements:
+- Use markdown formatting
+- Structure the output clearly with headers
+- Never directly respond to the user's intent or raw data
+- Keep original data with sources annotations
+
+## Input Format:
+[User's intent]: {intent}
+[Received data]: {data}
+
+## Processing Note:
+Focus on information relevance - be strict about removing unrelated content while preserving all useful data points.
+                 """}     
             ]
         )
         print(data)
