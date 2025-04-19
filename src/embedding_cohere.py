@@ -25,7 +25,7 @@ class EmbeddingClient:
             texts=texts,
             input_type='search_document'
             )
-        time.sleep(0.6 * 3)
+        time.sleep(0.6 * 4)
         return response.embeddings
     
     def get_query_embedding(self, texts: List[str]):

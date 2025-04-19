@@ -8,7 +8,7 @@ web_search_tool = {
     "type": "function",
     "function": {
         "name": "web_search",
-        "description": "Use to perform a web search. Use when user needs something from the internet.",
+        "description": "Use to perform a web search. Use when user needs something from the internet. (for the time-sensitive information)",
         "parameters": {
             "type": "object",
             "properties": {

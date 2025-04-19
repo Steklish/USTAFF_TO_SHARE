@@ -32,7 +32,7 @@ class ChromaDB:
                 break  # Success - exit the retry loop
             except Exception as e:
                 if attempt == max_retries - 1:  # Last attempt
-                    print(f"{RED}Failed to add chunk after {max_retries} attempts: {str(e)} {RESET}", file=sys.stderr)
+                    # print(f"{RED}Failed to add chunk after {max_retries} attempts: {str(e)} {RESET}", file=sys.stderr)
                     raise  # Re-raise the last exception
                 # print(f"{RED} Attempt {attempt + 1} failed, retrying...{RESET}", file=sys.stderr)
 
