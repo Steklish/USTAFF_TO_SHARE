@@ -11,6 +11,8 @@ GEMINI_API_KEY = GEMINI_API_KEY_ARRAY[0]
 GEMINI_MODEL = "gemini-2.5-flash-preview-04-17"
 EMBEDDING_MODEL = "text-multilingual-embedding-002"
 
+FAST_AND_DUMB_ASS_MODEL = "gemini-2.0-flash-lite"
+
 LOCATION = "us-central1"
 PROJECT_ID = "skls-ai-playground"
 

@@ -1,4 +1,7 @@
-import src.ustaff as ustaff_src
-ustaff = ustaff_src.ustaff()
+import src.ChromaDataBase as CD
+from pprint import pprint
 
-print(ustaff.get_contextual_response("сколько сейчас стоят акции Nvidia? Поищи в интернете, пожалуйста"))
+db = CD.ChromaDB()
+
+
+pprint(db.search("Стек протоколов TCP/IP"))

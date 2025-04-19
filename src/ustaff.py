@@ -45,7 +45,7 @@ class ustaff:
         contents.append(new_request)
         yield "summing up..."
         stream = self.client.chat.completions.create(
-            model=GEMINI_MODEL,  # Verify if your model supports streaming
+            model=FAST_AND_DUMB_ASS_MODEL,  # Verify if your model supports streaming
             messages=[
                 {"role": "system", "content": SYSTEM_INSTRUCTION},
                 *contents
@@ -87,14 +87,14 @@ class ustaff:
             
         print(f"{YELLOW}starting intent processing{RESET}")
         response = self.client.chat.completions.create(
-            model=GEMINI_MODEL,
-            max_completion_tokens=2100,
+            model=FAST_AND_DUMB_ASS_MODEL,
+            max_completion_tokens=500,
             # tools=TOOLS_DATA_RETRIEVAL,
             # tool_choice='required',
             messages=[
             {"role": "system", "content": "Ты должен определить намерение пользователя на основе его запроса и истории чата. Используй язык, кторый использует пользователь или язык, который подходит для данной задачи."},
             {"role": "user", "content": f"""
-    Тебе нужно исходя из истории переписки и запрса пользователя определить, обобщить и развернуто описать запрос пользователя.```{context}```
+    Тебе нужно исходя из истории переписки и запрса пользователя определить, обобщить и развернуто описать запрос пользователя, но не отвечать на него.```{context}```
     Запрос пользователя: ```{query}```
     Используй функции для получения необходимой пользователю информации.
     """}
@@ -166,7 +166,7 @@ class ustaff:
         Cut off unrelated parts of the data based on the intent.
         """
         response = self.client.chat.completions.create(
-            model=GEMINI_MODEL,
+            model=FAST_AND_DUMB_ASS_MODEL,
             messages=[
                 {"role": "system", "content": "Ты должен удалить из текста все части, которые не относятся к запросу пользователя и не имеют смысла. Если удаляешь документ, оставь зпись о том, какой документ был удален (включи документ и distance). Оставляй названия файлов и показатель расстояния. Преобразуй в markdown форматирование"},
                 {"role": "user", "content": f"""[user's intent]{intent} [recieved data]{data}"""}     

@@ -123,32 +123,51 @@ async function sendMessage() {
         // Process stream chunks
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let text = ''
-        let buffer = '';
 
         let started_answering = false;
+        let lastUpdateTime = Date.now();
+        let updateTimeout = 100; // Milliseconds between updates (adjust as needed)
+        let chunkBuffer = "";
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
         while (true) {
+            await sleep(updateTimeout);
             const { done, value } = await reader.read();
             let chunk = decoder.decode(value, { stream: true });
-            if (chunk == "answering..."){
-                botMessage.remove()
+            
+            // Handle "answering..." trigger
+            if (chunk === "answering...") {
+                botMessage.remove();
                 botMessage = addMessage('', 'bot');
-                text = '';
                 started_answering = true;
+                chunkBuffer = ''
                 continue;
             }
-            if (started_answering){
-                text += chunk;
-            }
-            else{
-                botMessage.remove()
+
+            // Accumulate chunks
+            if (started_answering) {
+                chunkBuffer += chunk;
+            } else {
+                botMessage.remove();
                 botMessage = addMessage('', 'bot');
-                text = chunk;
+                chunkBuffer = chunk;
             }
-            if (done) break;
-            
-            update_message(text, botMessage)
+
+            // Throttle updates using timeouts
+            const now = Date.now();
+            if (now - lastUpdateTime >= updateTimeout) {
+                update_message(chunkBuffer, botMessage);
+                // chunkBuffer = ""; // Clear buffer after update
+                lastUpdateTime = now;
+            }
+
+            // Final update on stream end
+            if (done) {
+                if (chunkBuffer) update_message(chunkBuffer, botMessage);
+                break;
+            }
         }
+
         console.info("stream recieved")
         addCollapsibleBlock('Sources', await getMeta());
         if (autoScrollEnabled) {

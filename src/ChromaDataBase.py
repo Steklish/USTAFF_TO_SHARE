@@ -16,7 +16,7 @@ class ChromaDB:
         self.embedding = EmbeddingClient()
 
     def _add_chunk(self, content: str, filesrc: str) -> None:
-        max_retries = 3
+        max_retries = 6
         for attempt in range(max_retries):
             try:
                 self.collection.add(
@@ -36,7 +36,7 @@ class ChromaDB:
                     raise  # Re-raise the last exception
                 # print(f"{RED} Attempt {attempt + 1} failed, retrying...{RESET}", file=sys.stderr)
 
-    def _split_into_chunks(self, text: str, chunk_size: int = 150, overlap: int = 10) -> list[str]:
+    def _split_into_chunks(self, text: str, chunk_size: int = 200, overlap: int = 10) -> list[str]:
         words = text.split()
         chunks = []
         for i in range(0, len(words), chunk_size - overlap):
@@ -89,12 +89,12 @@ class ChromaDB:
         print()  # New line after progress complete
         print(f"Document added with filename:{MAGENTA} {filename} {RESET} ({total_chunks} chunks)")
     
-    def search(self, query:str, n=5):
+    def search(self, query:str, n=10):
         max_retries = 3
         results = None
         
         # Search by filename embedding with retry
-        q_embedding = self.embedding.get_text_embedding([query])[0]
+        q_embedding = self.embedding.get_query_embedding([query])[0]
         for attempt in range(max_retries):
             try:
                 results = self.collection.query(

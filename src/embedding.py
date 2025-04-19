@@ -36,7 +36,25 @@ class EmbeddingClient:
             model=self.model,
             contents=texts
         )
-        time.sleep(0.25)
+        time.sleep(0.1)
+        return [embedding.values for embedding in response.embeddings]
+    
+    def get_query_embedding(self, texts: List[str]):
+        """
+        Get embeddings for a list of texts using Gemini Embedding API.
+        
+        Args:
+            texts: List of input strings to embed
+            
+        Returns:
+            List of embedding vectors (768-dimensional by default)
+        """
+        self.client = genai.Client(api_key=GEMINI_API_KEY)
+        response = self.client.models.embed_content(
+            model=self.model,
+            contents=texts
+        )
+        time.sleep(0.1)
         return [embedding.values for embedding in response.embeddings]
 
 if __name__ == "__main__":
