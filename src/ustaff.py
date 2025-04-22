@@ -24,7 +24,7 @@ TOOLS_DATA_RETRIEVAL_INTENT_CLARIFY = [
 
 class ustaff:
     def __init__(self):
-        self.client = client = OpenAI(
+        self.client = OpenAI(
             api_key=GEMINI_API_KEY,
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
         )
